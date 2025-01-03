@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         EdgePDF Theme
-// @namespace    https://github.com/thiwaK/EdgePDF-Theme
+// @namespace    http://tampermonkey.net/
 // @version      2025-01-02
-// @description  Apply custom text color for pdf text
+// @description  Apply selected custom theme based on the selected text color.
 // @author       thiwaK
 // @match        file://*/*.pdf
 // @grant        none
@@ -15,8 +15,6 @@
     console.log("EdgePDF Theme script loaded.");
 
     if (window.location.href.endsWith('.pdf')) {
-        console.log("Script running on a .pdf file.");
-
         var cover = document.createElement("div");
         let css = `
             position: fixed;
@@ -38,15 +36,17 @@
         gearButton.innerHTML = "&#1421";
         gearButton.style.position = "fixed";
         gearButton.style.bottom = "10px";
-        gearButton.style.right = "10px";
+        gearButton.style.right = "35px";
         gearButton.style.width = "40px";
         gearButton.style.height = "40px";
         gearButton.style.borderRadius = "50%";
         gearButton.style.backgroundColor = "#0078D7AA";
         gearButton.style.color = "white";
-        gearButton.style.border = "none";
+        gearButton.style.border = "1px";
         gearButton.style.cursor = "pointer";
         gearButton.style.zIndex = "1000";
+        gearButton.style.fontSize = "17px";
+        gearButton.style.borderColor = "#0000FF22";
 
         document.body.appendChild(gearButton);
 
@@ -58,9 +58,18 @@
         themeMenu.style.backgroundColor = "white";
         themeMenu.style.border = "1px solid #ccc";
         themeMenu.style.padding = "10px";
-        themeMenu.style.borderRadius = "10px";
+        themeMenu.style.borderRadius = "5px";
         themeMenu.style.display = "none";
         themeMenu.style.zIndex = "1001";
+        themeMenu.style.transition = "opacity 0.3s ease";
+        themeMenu.style.opacity = "0";
+
+        // Add menu caption
+        const menuCaption = document.createElement("div");
+        menuCaption.textContent = "Select text color";
+        menuCaption.style.fontWeight = "bold";
+        menuCaption.style.marginBottom = "10px";
+        themeMenu.appendChild(menuCaption);
 
         const themes = [
             { name: "Light", color: "white" },
@@ -89,6 +98,7 @@
             colorCircle.style.height = "12px";
             colorCircle.style.borderRadius = "50%";
             colorCircle.style.backgroundColor = theme.color;
+            colorCircle.style.border = "2px solid #80808088";
             colorCircle.style.marginRight = "10px";
 
             const themeName = document.createElement("span");
@@ -100,12 +110,11 @@
             themeOption.addEventListener("click", () => {
                 console.log(`Theme selected: ${theme.name}`);
                 cover.style.backgroundColor = theme.color;
-                themeMenu.style.display = "none";
+                closeMenu();
             });
 
             themeMenu.appendChild(themeOption);
 
-            // Add separator line except for the last item
             if (index < themes.length - 1) {
                 const separator = document.createElement("hr");
                 separator.style.border = "none";
@@ -117,10 +126,30 @@
 
         document.body.appendChild(themeMenu);
 
+        const openMenu = () => {
+            themeMenu.style.display = "block";
+            requestAnimationFrame(() => {
+                themeMenu.style.opacity = "1";
+            });
+        };
+
+        const closeMenu = () => {
+            themeMenu.style.opacity = "0";
+            setTimeout(() => {
+                themeMenu.style.display = "none";
+            }, 300);
+        };
+
         // Toggle theme menu visibility on gear button click
-        gearButton.addEventListener("click", () => {
-            themeMenu.style.display = themeMenu.style.display === "none" ? "block" : "none";
+        gearButton.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (themeMenu.style.display === "none") {
+                openMenu();
+            } else {
+                closeMenu();
+            }
         });
+
 
         console.log("Gear button and theme menu added.");
     } else {
